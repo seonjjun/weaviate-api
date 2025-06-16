@@ -5,19 +5,17 @@ import os
 
 app = Flask(__name__)
 
-# ✅ Weaviate WCS 연결 + OpenAI API Key 헤더 포함
-client = weaviate.connect_to_wcs(
+# ✅ 최신 방식: connect_to_weaviate_cloud
+client = weaviate.connect_to_weaviate_cloud(
     cluster_url=os.environ.get("WEAVIATE_URL"),
     auth_credentials=AuthApiKey(api_key=os.environ.get("WCS_API_KEY")),
-    additional_headers={
+    headers={
         "X-Openai-Api-Key": os.environ.get("OPENAI_API_KEY")
     }
 )
 
-# ✅ Structure 컬렉션 가져오기
 collection = client.collections.get("Structure")
 
-# ✅ 구조 저장 API
 @app.route('/store', methods=['POST'])
 def store():
     data = request.json
@@ -27,7 +25,6 @@ def store():
     })
     return jsonify({"status": "stored"})
 
-# ✅ 유사도 검색 API
 @app.route('/search', methods=['POST'])
 def search():
     query = request.json.get("query")
