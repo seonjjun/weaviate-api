@@ -1,0 +1,2 @@
+Flask==2.3.3
+weaviate-client==3.25.4
