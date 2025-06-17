@@ -14,11 +14,11 @@ client = weaviate.connect_to_weaviate_cloud(
     }
 )
 
-# 🔍 Structure 컬렉션 가져오기
+# 🎯 Structure 컬렉션 연결
 collection = client.collections.get("Structure")
 
 
-# ✅ 구조 저장 API
+# ✅ 1. 구조 저장 API
 @app.route('/store', methods=['POST'])
 def store():
     data = request.json
@@ -39,7 +39,7 @@ def store():
     return jsonify({"status": "stored"}), 200
 
 
-# ✅ 유사 구조 검색 API
+# ✅ 2. 유사도 검색 API
 @app.route('/search', methods=['POST'])
 def search():
     query = request.json.get("query")
@@ -47,7 +47,7 @@ def search():
     return jsonify(result.objects), 200
 
 
-# ✅ 저장된 구조 ID 목록 API (우리가 저장한 id만 반환)
+# ✅ 3. 저장된 구조 목록 API (우리가 입력한 id만)
 @app.route('/list', methods=['GET'])
 def list_structures():
     result = collection.query.fetch_objects(limit=100)
@@ -56,3 +56,19 @@ def list_structures():
         for obj in result.objects if "id" in obj.properties
     ]
     return jsonify(ids), 200
+
+
+# ✅ 4. 구조 삭제 API (id 기준으로 삭제)
+@app.route('/delete', methods=['DELETE'])
+def delete_structure():
+    structure_id = request.args.get("id")
+    if not structure_id:
+        return jsonify({"error": "Missing id parameter"}), 400
+
+    result = collection.query.fetch_objects(limit=100)
+    for obj in result.objects:
+        if obj.properties.get("id") == structure_id:
+            collection.data.delete_by_id(obj.uuid)
+            return jsonify({"status": f"{structure_id} deleted"}), 200
+
+    return jsonify({"error": f"{structure_id} not found"}), 404
