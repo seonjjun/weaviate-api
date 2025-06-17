@@ -58,7 +58,7 @@ def list_structures():
     return jsonify(ids), 200
 
 
-# ✅ 4. 구조 삭제 API (id 기준으로 삭제)
+# ✅ 4. 구조 삭제 API 
 @app.route('/delete-structure', methods=['POST'])
 def delete_structure():
     try:
