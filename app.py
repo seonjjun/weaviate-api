@@ -59,11 +59,19 @@ def list_structures():
 
 
 # ✅ 4. 구조 삭제 API (id 기준으로 삭제)
-@app.route('/delete', methods=['DELETE'])
+@app.route('/delete-structure', methods=['POST'])
 def delete_structure():
-    structure_id = request.args.get("id")
-    if not structure_id:
-        return jsonify({"error": "Missing id parameter"}), 400
+    try:
+        data = request.get_json()
+        uuid = data.get("uuid")
+        if not uuid:
+            return jsonify({"status": "error", "message": "UUID is required"}), 400
+
+        client.data_object.delete(uuid=uuid, class_name="Structure")
+        return jsonify({"status": "ok", "message": f"Deleted {uuid}"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
 
     result = collection.query.fetch_objects(limit=100)
     for obj in result.objects:
