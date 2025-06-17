@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# 🔐 Weaviate 클라이언트 연결 (Cloud 버전)
+# ✅ Weaviate Cloud 연결
 client = weaviate.connect_to_weaviate_cloud(
     cluster_url=os.environ.get("WEAVIATE_URL"),
     auth_credentials=AuthApiKey(api_key=os.environ.get("WCS_API_KEY")),
@@ -14,7 +14,7 @@ client = weaviate.connect_to_weaviate_cloud(
     }
 )
 
-# 🎯 'Structure'라는 컬렉션 불러오기
+# 🔍 Structure 컬렉션 가져오기
 collection = client.collections.get("Structure")
 
 
@@ -39,7 +39,7 @@ def store():
     return jsonify({"status": "stored"}), 200
 
 
-# ✅ 유사 검색 API
+# ✅ 유사 구조 검색 API
 @app.route('/search', methods=['POST'])
 def search():
     query = request.json.get("query")
@@ -47,13 +47,12 @@ def search():
     return jsonify(result.objects), 200
 
 
-# ✅ 저장된 구조 리스트 API
+# ✅ 저장된 구조 ID 목록 API (우리가 저장한 id만 반환)
 @app.route('/list', methods=['GET'])
 def list_structures():
     result = collection.query.fetch_objects(limit=100)
-    ids = [obj.properties.get("id", obj.uuid) for obj in result.objects]
+    ids = [
+        obj.properties["id"]
+        for obj in result.objects if "id" in obj.properties
+    ]
     return jsonify(ids), 200
-
-
-# ✅ Render용 (app:app)
-# (주의: 절대 app.run() 쓰지 말 것)
