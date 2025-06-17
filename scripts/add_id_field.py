@@ -12,8 +12,10 @@ client = connect_to_weaviate_cloud(
 )
 
 collection = client.collections.get("Structure")
-schema = collection.config.properties
-existing_fields = [prop.name for prop in schema]
+
+# ✅ 수정된 부분: 스키마에서 필드 목록 가져오기
+schema = collection.config.as_dict()
+existing_fields = [prop["name"] for prop in schema["properties"]]
 
 if "id" not in existing_fields:
     collection.config.add_property(
